@@ -5,6 +5,7 @@ import api.toygpt.dto.response.ChatResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.tomcat.util.json.JSONParser;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +17,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @RestController
+@Slf4j
 public class ChatController {
 
     @Qualifier("openaiRestTemplate")
@@ -30,13 +32,14 @@ public class ChatController {
 
     @GetMapping("/chat")
     public String chat(@RequestParam String prompt) {
-
+        log.debug("Call Get GPT API");
+        log.debug("prompt: {}",prompt);
         ChatRequest chatRequest = ChatRequest.chatRequest()
                 .model(model)
                 .prompt(prompt)
                 .n(1)
                 .temperature(0.8)
-                .max_tokens(10)
+                .max_tokens(100)
                 .build();
 
         ChatResponse response = restTemplate.postForObject(apiUrl, chatRequest, ChatResponse.class);
@@ -49,7 +52,7 @@ public class ChatController {
         return response.getChoices().get(0).getMessage().getContent();
     }
 
-//    To avoid CORS Error
+//    To avoid CORS Error by proxy
     @GetMapping("/chat/proxy")
     @ResponseBody
     public String proxyChat(@RequestParam String prompt){
